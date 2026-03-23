@@ -942,49 +942,85 @@ function toggleBGM() {
 renderTop();
 
 //
-  function exportData() {
+function exportData() {
   const data = localStorage.getItem('training_records');
   if (!data) {
     alert('保存データがありません');
     return;
   }
 
-  if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(data)
-      .then(() => {
-        alert('バックアップ文字列をコピーしました。LINEやメモに貼り付けて保存してください。');
-      })
-      .catch(() => {
-        fallbackCopyText(data);
-      });
-  } else {
-    fallbackCopyText(data);
-  }
-}
+  const overlay = document.createElement('div');
+  overlay.style.position = 'fixed';
+  overlay.style.left = '0';
+  overlay.style.top = '0';
+  overlay.style.width = '100%';
+  overlay.style.height = '100%';
+  overlay.style.background = 'rgba(0,0,0,0.85)';
+  overlay.style.zIndex = '9999';
+  overlay.style.display = 'flex';
+  overlay.style.justifyContent = 'center';
+  overlay.style.alignItems = 'center';
+  overlay.style.padding = '16px';
+  overlay.style.boxSizing = 'border-box';
 
-function fallbackCopyText(text) {
+  const box = document.createElement('div');
+  box.style.background = '#fff';
+  box.style.width = '100%';
+  box.style.maxWidth = '600px';
+  box.style.borderRadius = '12px';
+  box.style.padding = '16px';
+  box.style.boxSizing = 'border-box';
+
+  const title = document.createElement('div');
+  title.textContent = 'この文字列を長押ししてコピーしてください';
+  title.style.fontWeight = 'bold';
+  title.style.marginBottom = '12px';
+
   const textarea = document.createElement('textarea');
-  textarea.value = text;
-  textarea.style.position = 'fixed';
-  textarea.style.left = '-9999px';
-  textarea.style.top = '0';
-  document.body.appendChild(textarea);
-  textarea.focus();
-  textarea.select();
+  textarea.value = data;
+  textarea.readOnly = true;
+  textarea.style.width = '100%';
+  textarea.style.height = '240px';
+  textarea.style.fontSize = '14px';
+  textarea.style.boxSizing = 'border-box';
 
-  try {
-    const success = document.execCommand('copy');
-    document.body.removeChild(textarea);
+  const buttonArea = document.createElement('div');
+  buttonArea.style.display = 'flex';
+  buttonArea.style.gap = '8px';
+  buttonArea.style.marginTop = '12px';
+  buttonArea.style.justifyContent = 'center';
+  buttonArea.style.flexWrap = 'wrap';
 
-    if (success) {
-      alert('バックアップ文字列をコピーしました。LINEやメモに貼り付けて保存してください。');
-    } else {
-      alert('自動コピーできませんでした。別のブラウザで開くか、後でファイル保存方式に変える必要があります。');
-    }
-  } catch (e) {
-    document.body.removeChild(textarea);
-    alert('自動コピーできませんでした。別のブラウザで開くか、後でファイル保存方式に変える必要があります。');
-  }
+  const selectBtn = document.createElement('button');
+  selectBtn.textContent = '全部選択';
+  selectBtn.style.padding = '10px 16px';
+  selectBtn.onclick = function () {
+    textarea.focus();
+    textarea.select();
+    textarea.setSelectionRange(0, textarea.value.length);
+  };
+
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = '閉じる';
+  closeBtn.style.padding = '10px 16px';
+  closeBtn.onclick = function () {
+    document.body.removeChild(overlay);
+  };
+
+  buttonArea.appendChild(selectBtn);
+  buttonArea.appendChild(closeBtn);
+
+  box.appendChild(title);
+  box.appendChild(textarea);
+  box.appendChild(buttonArea);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+
+  setTimeout(() => {
+    textarea.focus();
+    textarea.select();
+    textarea.setSelectionRange(0, textarea.value.length);
+  }, 100);
 }
 
 function importData() {
