@@ -375,9 +375,11 @@ body {
       <div><span class="score-value" id="top-score">0</span><span class="score-unit"> pt</span></div>
     </div>
     <button class="btn-start" onclick="goToSelect()">トレーニングを始める 🔥</button>
-    <div class="reset-area">
-      <button class="btn-reset" onclick="resetData()">データをリセット</button>
-    </div>
+   <div class="reset-area" style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center;">
+  <button class="btn-reset" onclick="exportData()">データを書き出す</button>
+  <button class="btn-reset" onclick="importData()">データを読み込む</button>
+  <button class="btn-reset" onclick="resetData()">データをリセット</button>
+</div>
   </div>
 </div>
 
