@@ -397,10 +397,23 @@ body {
     </div>
     <button class="btn-start" onclick="goToSelect()">トレーニングを始める 🔥</button>
 <div class="reset-area">
-  <button class="btn-reset" onclick="exportData()">データを書き出す</button>
-  <button class="btn-reset" onclick="triggerImport()">データを読み込む</button>
+  <button class="btn-reset" onclick="openBackupBox()">データ移行</button>
   <button class="btn-reset" onclick="resetData()">データをリセット</button>
-  <input id="import-file" type="file" accept="application/json" style="display:none" onchange="importData(event)">
+</div>
+
+<div id="backup-box" style="display:none; width:100%; max-width:380px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18); border-radius:12px; padding:12px; margin-top:10px;">
+  <div style="font-size:13px; font-weight:700; margin-bottom:8px;">① 下の文字列をコピーして保存</div>
+  <textarea id="backup-export" readonly style="width:100%; height:120px; font-size:12px; padding:8px; border-radius:8px; border:none; margin-bottom:8px;"></textarea>
+
+  <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
+    <button class="btn-reset" type="button" onclick="selectBackupText()">全部選択</button>
+    <button class="btn-reset" type="button" onclick="closeBackupBox()">閉じる</button>
+  </div>
+
+  <div style="font-size:13px; font-weight:700; margin-bottom:8px;">② スマホ側ではここに貼り付けて復元</div>
+  <textarea id="backup-import" placeholder="ここに貼り付け" style="width:100%; height:120px; font-size:12px; padding:8px; border-radius:8px; border:none; margin-bottom:8px;"></textarea>
+
+  <button class="btn-reset" type="button" onclick="importFromText()">この内容で復元</button>
 </div>
   </div>
 </div>
@@ -964,49 +977,40 @@ function toggleBGM() {
 renderTop();
 
 //
-function exportData() {
-  const data = localStorage.getItem('training_records');
-  if (!data) {
-    alert('保存データがありません');
+function openBackupBox() {
+  const data = localStorage.getItem('training_records') || '{}';
+  document.getElementById('backup-box').style.display = 'block';
+  document.getElementById('backup-export').value = data;
+  document.getElementById('backup-import').value = '';
+}
+
+function closeBackupBox() {
+  document.getElementById('backup-box').style.display = 'none';
+}
+
+function selectBackupText() {
+  const textarea = document.getElementById('backup-export');
+  textarea.focus();
+  textarea.select();
+  textarea.setSelectionRange(0, textarea.value.length);
+}
+
+function importFromText() {
+  const text = document.getElementById('backup-import').value.trim();
+  if (!text) {
+    alert('貼り付け内容が空です');
     return;
   }
 
-  const blob = new Blob([data], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'training_records_backup.json';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-
-  URL.revokeObjectURL(url);
-}
-
-function triggerImport() {
-  const input = document.getElementById('import-file');
-  input.value = '';
-  input.click();
-}
-
-function importData(event) {
-  const file = event.target.files && event.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const text = e.target.result;
-      JSON.parse(text);
-      localStorage.setItem('training_records', text);
-      alert('データを読み込みました！');
-      renderTop();
-    } catch (err) {
-      alert('読み込みに失敗しました。バックアップファイルを確認してください。');
-    }
-  };
-  reader.readAsText(file);
+  try {
+    JSON.parse(text);
+    localStorage.setItem('training_records', text);
+    alert('データを復元しました！');
+    closeBackupBox();
+    renderTop();
+  } catch (e) {
+    alert('貼り付けた内容が正しくありません');
+  }
 }
 </script>
 </body>
