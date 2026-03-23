@@ -971,92 +971,42 @@ function exportData() {
     return;
   }
 
-  const overlay = document.createElement('div');
-  overlay.style.position = 'fixed';
-  overlay.style.left = '0';
-  overlay.style.top = '0';
-  overlay.style.width = '100%';
-  overlay.style.height = '100%';
-  overlay.style.background = 'rgba(0,0,0,0.85)';
-  overlay.style.zIndex = '9999';
-  overlay.style.display = 'flex';
-  overlay.style.justifyContent = 'center';
-  overlay.style.alignItems = 'center';
-  overlay.style.padding = '16px';
-  overlay.style.boxSizing = 'border-box';
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
 
-  const box = document.createElement('div');
-  box.style.background = '#fff';
-  box.style.width = '100%';
-  box.style.maxWidth = '600px';
-  box.style.borderRadius = '12px';
-  box.style.padding = '16px';
-  box.style.boxSizing = 'border-box';
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'training_records_backup.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 
-  const title = document.createElement('div');
-  title.textContent = 'この文字列を長押ししてコピーしてください';
-  title.style.fontWeight = 'bold';
-  title.style.marginBottom = '12px';
-
-  const textarea = document.createElement('textarea');
-  textarea.value = data;
-  textarea.readOnly = true;
-  textarea.style.width = '100%';
-  textarea.style.height = '240px';
-  textarea.style.fontSize = '14px';
-  textarea.style.boxSizing = 'border-box';
-
-  const buttonArea = document.createElement('div');
-  buttonArea.style.display = 'flex';
-  buttonArea.style.gap = '8px';
-  buttonArea.style.marginTop = '12px';
-  buttonArea.style.justifyContent = 'center';
-  buttonArea.style.flexWrap = 'wrap';
-
-  const selectBtn = document.createElement('button');
-  selectBtn.textContent = '全部選択';
-  selectBtn.style.padding = '10px 16px';
-  selectBtn.onclick = function () {
-    textarea.focus();
-    textarea.select();
-    textarea.setSelectionRange(0, textarea.value.length);
-  };
-
-  const closeBtn = document.createElement('button');
-  closeBtn.textContent = '閉じる';
-  closeBtn.style.padding = '10px 16px';
-  closeBtn.onclick = function () {
-    document.body.removeChild(overlay);
-  };
-
-  buttonArea.appendChild(selectBtn);
-  buttonArea.appendChild(closeBtn);
-
-  box.appendChild(title);
-  box.appendChild(textarea);
-  box.appendChild(buttonArea);
-  overlay.appendChild(box);
-  document.body.appendChild(overlay);
-
-  setTimeout(() => {
-    textarea.focus();
-    textarea.select();
-    textarea.setSelectionRange(0, textarea.value.length);
-  }, 100);
+  URL.revokeObjectURL(url);
 }
 
-function importData() {
-  const input = prompt('バックアップ文字列を貼り付けてください');
-  if (!input) return;
+function triggerImport() {
+  const input = document.getElementById('import-file');
+  input.value = '';
+  input.click();
+}
 
-  try {
-    JSON.parse(input);
-    localStorage.setItem('training_records', input);
-    alert('データを読み込みました！');
-    renderTop();
-  } catch (e) {
-    alert('読み込みに失敗しました');
-  }
+function importData(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const text = e.target.result;
+      JSON.parse(text);
+      localStorage.setItem('training_records', text);
+      alert('データを読み込みました！');
+      renderTop();
+    } catch (err) {
+      alert('読み込みに失敗しました。バックアップファイルを確認してください。');
+    }
+  };
+  reader.readAsText(file);
 }
 </script>
 </body>
