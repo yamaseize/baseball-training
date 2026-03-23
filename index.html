@@ -948,7 +948,43 @@ renderTop();
     alert('保存データがありません');
     return;
   }
-  prompt('このバックアップ文字列をコピーしてください', data);
+
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(data)
+      .then(() => {
+        alert('バックアップ文字列をコピーしました。LINEやメモに貼り付けて保存してください。');
+      })
+      .catch(() => {
+        fallbackCopyText(data);
+      });
+  } else {
+    fallbackCopyText(data);
+  }
+}
+
+function fallbackCopyText(text) {
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.style.position = 'fixed';
+  textarea.style.left = '-9999px';
+  textarea.style.top = '0';
+  document.body.appendChild(textarea);
+  textarea.focus();
+  textarea.select();
+
+  try {
+    const success = document.execCommand('copy');
+    document.body.removeChild(textarea);
+
+    if (success) {
+      alert('バックアップ文字列をコピーしました。LINEやメモに貼り付けて保存してください。');
+    } else {
+      alert('自動コピーできませんでした。別のブラウザで開くか、後でファイル保存方式に変える必要があります。');
+    }
+  } catch (e) {
+    document.body.removeChild(textarea);
+    alert('自動コピーできませんでした。別のブラウザで開くか、後でファイル保存方式に変える必要があります。');
+  }
 }
 
 function importData() {
