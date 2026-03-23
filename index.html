@@ -940,6 +940,30 @@ function toggleBGM() {
 
 // ─── INIT ───
 renderTop();
+
+//
+  function exportData() {
+  const data = localStorage.getItem('training_records');
+  if (!data) {
+    alert('保存データがありません');
+    return;
+  }
+  prompt('このバックアップ文字列をコピーしてください', data);
+}
+
+function importData() {
+  const input = prompt('バックアップ文字列を貼り付けてください');
+  if (!input) return;
+
+  try {
+    JSON.parse(input);
+    localStorage.setItem('training_records', input);
+    alert('データを読み込みました！');
+    renderTop();
+  } catch (e) {
+    alert('読み込みに失敗しました');
+  }
+}
 </script>
 </body>
 </html>
